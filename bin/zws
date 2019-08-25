@@ -61,7 +61,7 @@ encode(){
 
 decode(){
   cat "$1" |\
-  sed "s/[^$ZWS0$ZWS1$ZWS2$ZWS3]//g" |\
+  sed -z "s/[^$ZWS0$ZWS1$ZWS2$ZWS3]//g" |\
   sed "s/../& /g" |\
   sed "
     s/${ZWS_HEX[0x0]}/0/g;
@@ -80,7 +80,6 @@ decode(){
     s/${ZWS_HEX[0xd]}/d/g;
     s/${ZWS_HEX[0xe]}/e/g;
     s/${ZWS_HEX[0xf]}/f/g" |\
-  tr -d ' ' |\
   xxd -p -r
 }
 
