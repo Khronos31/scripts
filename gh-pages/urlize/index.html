@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>urlize</title>
+</head>
+<script>
+    function encode(data, f) {
+        const blob = new Blob([data]);
+        const r = new FileReader();
+        r.onload = function () {
+            const data = r.result.substr(r.result.indexOf(',') + 1);
+            // console.log(r, data);
+            f(data);
+        };
+        r.readAsDataURL(blob);
+    }
+
+    function generate() {
+        const inputTextArea = document.getElementById('inputTextArea');
+        const inputData = inputTextArea.value;
+        encode(inputData, function(r) {
+            const width = 4083;
+            
+            // Base64エンコードされたデータを width の幅のスライスに分割
+            let encodedList = [];
+            let buffer = "";
+            for (let i=0; i<r.length; i++) {
+                buffer += r[i];
+                if (width <= buffer.length) {
+                    encodedList.push(buffer);
+                    buffer = "";
+                }
+            }
+            if (0 < buffer.length) {
+                encodedList.push(buffer);
+            }
+
+            // URL文字列に変換
+            encodedList = encodedList.map((v) => `t.ls/${v}`)
+
+            // 最初のデータにechoを追加
+            encodedList[0] = "echo '" + encodedList[0];
+
+            // 最期のデータにsedのデコード処理を追加
+            const decodeExpr = `'|sed 's/^t.ls.//'|base64 -di`;
+            encodedList.push(decodeExpr);
+
+            const output = encodedList.join("\n");
+            const outputTextArea = document.getElementById('outputTextArea');
+            outputTextArea.value = output;
+        });
+    }
+</script>
+
+<body>
+    <textarea name="" id="inputTextArea" cols="80" rows="40"></textarea>
+    <input type="button" id="generateButton" value="Generate" onclick="generate()"/>
+    <hr>
+    <textarea name="" id="outputTextArea" cols="80" rows="40"></textarea>
+</body>
+
+</html>
