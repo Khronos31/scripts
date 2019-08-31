@@ -6,61 +6,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>urlize</title>
-</head>
-<script>
-    function encode(data, f) {
-        const blob = new Blob([data]);
-        const r = new FileReader();
-        r.onload = function () {
-            const data = r.result.substr(r.result.indexOf(',') + 1);
-            // console.log(r, data);
-            f(data);
-        };
-        r.readAsDataURL(blob);
-    }
+    <script>
+        function encode(data, f) {
+            const blob = new Blob([data]);
+            const r = new FileReader();
+            r.onload = function () {
+                const data = r.result.substr(r.result.indexOf(',') + 1);
+                // console.log(r, data);
+                f(data);
+            };
+            r.readAsDataURL(blob);
+        }
 
-    function generate() {
-        const inputTextArea = document.getElementById('inputTextArea');
-        const inputData = inputTextArea.value;
-        encode(inputData, function(r) {
-            const width = 4083;
-            
-            // Base64エンコードされたデータを width の幅のスライスに分割
-            let encodedList = [];
-            let buffer = "";
-            for (let i=0; i<r.length; i++) {
-                buffer += r[i];
-                if (width <= buffer.length) {
-                    encodedList.push(buffer);
-                    buffer = "";
+        function generate() {
+            const inputTextArea = document.getElementById('inputTextArea');
+            const inputData = inputTextArea.value;
+            encode(inputData, function (r) {
+                const width = 4083;
+
+                // Base64エンコードされたデータを width の幅のスライスに分割
+                let encodedList = [];
+                let buffer = "";
+                for (let i = 0; i < r.length; i++) {
+                    buffer += r[i];
+                    if (width <= buffer.length) {
+                        encodedList.push(buffer);
+                        buffer = "";
+                    }
                 }
-            }
-            if (0 < buffer.length) {
-                encodedList.push(buffer);
-            }
+                if (0 < buffer.length) {
+                    encodedList.push(buffer);
+                }
 
-            // URL文字列に変換
-            encodedList = encodedList.map((v) => `t.ls/${v}`)
+                // URL文字列に変換
+                encodedList = encodedList.map((v) => `t.ls/${v}`)
 
-            // 最初のデータにechoを追加
-            encodedList[0] = "echo '" + encodedList[0];
+                // 最初のデータにechoを追加
+                encodedList[0] = "echo '" + encodedList[0];
 
-            // 最期のデータにsedのデコード処理を追加
-            const decodeExpr = `'|sed 's/^t.ls.//'|base64 -di`;
-            encodedList.push(decodeExpr);
+                // 最期のデータにsedのデコード処理を追加
+                const decodeExpr = `'|sed 's/^t.ls.//'|base64 -di`;
+                encodedList.push(decodeExpr);
 
-            const output = encodedList.join("\n");
-            const outputTextArea = document.getElementById('outputTextArea');
-            outputTextArea.value = output;
-        });
-    }
-</script>
+                const output = encodedList.join("\n");
+                const outputTextArea = document.getElementById('outputTextArea');
+                outputTextArea.value = output;
+            });
+        }
+    </script>
+
+    <style>
+        .main {
+            width: 60vw;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            width: 60vw;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+        }
+
+        .button {
+            width: 80%;
+            height: 80px;
+        }
+    </style>
+</head>
 
 <body>
-    <textarea name="" id="inputTextArea" cols="80" rows="40"></textarea>
-    <input type="button" id="generateButton" value="Generate" onclick="generate()"/>
-    <hr>
-    <textarea name="" id="outputTextArea" cols="80" rows="40"></textarea>
+    <div class="main">
+        <div class="container">
+            <h1>urlize</h1>
+            <hr>
+        </div>
+
+        <div class="container">
+            <h2>Input</h2>
+            <p>Paste data to here. And push button.</p>
+            <textarea name="" id="inputTextArea"></textarea>
+            <input type="button" id="generateButton" class="button" value="Generate" onclick="generate()" />
+        </div>
+
+        <div class="container">
+            <h2>Output</h2>
+            <textarea name="" id="outputTextArea"></textarea>
+        </div>
+    </div>
 </body>
 
 </html>
