@@ -24,7 +24,7 @@ ZWS_HEX=(
   $ZWS3$ZWS3
 )
 
-usage(){
+usage() {
   echo "Usage: $0 [OPTION] [FILE]"
   echo "Zero width space encode or decode FILE, or standard input to standard output."
   echo "With no FILE, or when FILE is -, read standard input."
@@ -33,12 +33,11 @@ usage(){
   echo "  -h : display this help and exit"
 }
 
-
-encode(){
+encode() {
   echo -n "'"
-  xxd -p "$1" |\
-  tr -d '\n' |\
-  sed "
+  xxd -p "$1" |
+    tr -d '\n' |
+    sed "
     s/0/${ZWS_HEX[0x0]}/g;
     s/1/${ZWS_HEX[0x1]}/g;
     s/2/${ZWS_HEX[0x2]}/g;
@@ -58,10 +57,11 @@ encode(){
   echo "'"
 }
 
-decode(){
-  sed -z "s/[^$ZWS0$ZWS1$ZWS2$ZWS3]//g" "$1" |\
-  sed "s/../& /g" |\
-  sed "
+decode() {
+  sed "s/[^$ZWS0$ZWS1$ZWS2$ZWS3]//g" "$1" |
+    tr -d '\n' |
+    sed "s/../& /g" |
+    sed "
     s/${ZWS_HEX[0x0]}/0/g;
     s/${ZWS_HEX[0x1]}/1/g;
     s/${ZWS_HEX[0x2]}/2/g;
@@ -77,23 +77,25 @@ decode(){
     s/${ZWS_HEX[0xc]}/c/g;
     s/${ZWS_HEX[0xd]}/d/g;
     s/${ZWS_HEX[0xe]}/e/g;
-    s/${ZWS_HEX[0xf]}/f/g" |\
-  xxd -p -r
+    s/${ZWS_HEX[0xf]}/f/g" |
+    xxd -p -r
 }
 
 MODE="ENCODE"
 FILE="-"
 
-for arg in $@;do
+for arg in $@; do
   case "$arg" in
-    "-h"|"--help") usage;exit 0;;
-    "-d"|"--decode") MODE="DECODE";;
-    *) FILE="$arg";;
+    "-h" | "--help")
+      usage
+      exit 0
+      ;;
+    "-d" | "--decode") MODE="DECODE" ;;
+    *) FILE="$arg" ;;
   esac
 done
 
-
-if [ "$MODE" = "DECODE" ] ; then
+if [ "$MODE" = "DECODE" ]; then
   decode "$FILE"
 else
   encode "$FILE"
