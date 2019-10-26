@@ -61,13 +61,37 @@
 
         function uploadFile(event) {
             const file = event.target.files[0];
-            const r = new FileReader();
-            r.onload = function() {
-                const data = r.result.substr(r.result.indexOf(',') + 1);
-                const inputTextArea = document.getElementById('inputTextArea2');
-                inputTextArea.value = data;
-            }
-            r.readAsDataURL(file);
+            encode(file, function (r) {
+                const width = 4083;
+
+                // Base64エンコードされたデータを width の幅のスライスに分割
+                let encodedList = [];
+                let buffer = "";
+                for (let i = 0; i < r.length; i++) {
+                    buffer += r[i];
+                    if (width <= buffer.length) {
+                        encodedList.push(buffer);
+                        buffer = "";
+                    }
+                }
+                if (0 < buffer.length) {
+                    encodedList.push(buffer);
+                }
+
+                // URL文字列に変換
+                encodedList = encodedList.map((v) => `t.ls/${v}`)
+
+                // 最初のデータにechoを追加
+                encodedList[0] = "echo '" + encodedList[0];
+
+                // 最期のデータにsedのデコード処理を追加
+                const decodeExpr = `'|sed 's/^t.ls.//'|base64 -di`;
+                encodedList.push(decodeExpr);
+
+                const output = encodedList.join("\n");
+                const outputTextArea = document.getElementById('outputTextArea2');
+                outputTextArea.value = output;
+            });
         }
 
         function generate2() {
@@ -153,10 +177,8 @@
 
         <div class="container">
             <h2>Input</h2>
-            <p>Ppload file</p>
+            <p>Upload file</p>
             <input type="file" id="uploadButton" class="button" value="Upload">
-            <textarea name="" id="inputTextArea2"></textarea>
-            <input type="button" id="generateButton2" class="button" value="Generate" onclick="generate2()" />
         </div>
 
         <div class="container">
