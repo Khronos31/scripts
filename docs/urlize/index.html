@@ -23,6 +23,12 @@
             encode(file, generateShellScript);
         }
 
+        function copyButtonOnClicked() {
+            const outputTextArea = document.getElementById('outputTextArea');
+            outputTextArea.select();
+            document.execCommand('copy');
+        }
+
         /**
          * encode はdataをBase64エンコードし、エンコード後のデータに関数fを適用する。
          * @type {Array} data Byteデータ
@@ -122,6 +128,7 @@
 
         <div class="container">
             <h2>Output</h2>
+            <input type="button" value="Copy to clipboard" onclick="copyButtonOnClicked()" />
             <textarea name="" id="outputTextArea"></textarea>
         </div>
     </div>
