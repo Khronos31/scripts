@@ -7,6 +7,33 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>urlize</title>
     <script>
+        window.onload = function() {
+            const uploadInput = document.getElementById('uploadButton');
+            uploadInput.addEventListener('change', uploadButtonOnChanged, false);
+        }
+
+        function generateButtonOnClicked() {
+            const inputTextArea = document.getElementById('inputTextArea');
+            const inputData = inputTextArea.value;
+            encode(inputData, generateShellScript);
+        }
+
+        function uploadButtonOnChanged(event) {
+            const file = event.target.files[0];
+            encode(file, generateShellScript);
+        }
+
+        function copyButtonOnClicked() {
+            const outputTextArea = document.getElementById('outputTextArea');
+            outputTextArea.select();
+            document.execCommand('copy');
+        }
+
+        /**
+         * encode はdataをBase64エンコードし、エンコード後のデータに関数fを適用する。
+         * @type {Array} data Byteデータ
+         * @type {Function} f エンコード後のデータに適用する関数
+         */
         function encode(data, f) {
             const blob = new Blob([data]);
             const r = new FileReader();
@@ -18,41 +45,42 @@
             r.readAsDataURL(blob);
         }
 
-        function generate() {
-            const inputTextArea = document.getElementById('inputTextArea');
-            const inputData = inputTextArea.value;
-            encode(inputData, function (r) {
-                const width = 4083;
+        /**
+         * generateShellScript はテキストをURL文字列に変換し、base64デコードするシェルスクリプト文字列を生成し、textareaにセットする。
+         * @type {String} text URL変換対象のテキスト
+         */
+        function generateShellScript(text) {
+            const width = 4083;
 
-                // Base64エンコードされたデータを width の幅のスライスに分割
-                let encodedList = [];
-                let buffer = "";
-                for (let i = 0; i < r.length; i++) {
-                    buffer += r[i];
-                    if (width <= buffer.length) {
-                        encodedList.push(buffer);
-                        buffer = "";
-                    }
-                }
-                if (0 < buffer.length) {
+            // Base64エンコードされたデータを width の幅のスライスに分割
+            let encodedList = [];
+            let buffer = "";
+            for (let i = 0; i < text.length; i++) {
+                buffer += text[i];
+                if (width <= buffer.length) {
                     encodedList.push(buffer);
+                    buffer = "";
                 }
+            }
+            if (0 < buffer.length) {
+                encodedList.push(buffer);
+            }
 
-                // URL文字列に変換
-                encodedList = encodedList.map((v) => `t.ls/${v}`)
+            // URL文字列に変換
+            encodedList = encodedList.map((v) => `t.ls/${v}`)
 
-                // 最初のデータにechoを追加
-                encodedList[0] = "echo '" + encodedList[0];
+            // 最初のデータにechoを追加
+            encodedList[0] = "echo '" + encodedList[0];
 
-                // 最期のデータにsedのデコード処理を追加
-                const decodeExpr = `'|sed 's/^t.ls.//'|base64 -di`;
-                encodedList.push(decodeExpr);
+            // 最期のデータにsedのデコード処理を追加
+            const decodeExpr = `'|sed 's/^t.ls.//'|base64 -di`;
+            encodedList.push(decodeExpr);
 
-                const output = encodedList.join("\n");
-                const outputTextArea = document.getElementById('outputTextArea');
-                outputTextArea.value = output;
-            });
+            const output = encodedList.join("\n");
+            const outputTextArea = document.getElementById('outputTextArea');
+            outputTextArea.value = output;
         }
+
     </script>
 
     <style>
@@ -87,13 +115,20 @@
 
         <div class="container">
             <h2>Input</h2>
-            <p>Paste data to here. And push button.</p>
-            <textarea name="" id="inputTextArea"></textarea>
-            <input type="button" id="generateButton" class="button" value="Generate" onclick="generate()" />
+            <div>
+                <p>Paste data to here. And push button.</p>
+                <textarea name="" id="inputTextArea"></textarea>
+                <input type="button" id="generateButton" class="button" value="Generate" onclick="generateButtonOnClicked()" />
+            </div>
+            <div>
+                <p>or upload file</p>
+                <input type="file" id="uploadButton" class="button" value="Upload">
+            </div>
         </div>
 
         <div class="container">
             <h2>Output</h2>
+            <input type="button" value="Copy to clipboard" onclick="copyButtonOnClicked()" />
             <textarea name="" id="outputTextArea"></textarea>
         </div>
     </div>
