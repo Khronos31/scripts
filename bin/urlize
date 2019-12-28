@@ -1,7 +1,8 @@
 #!/bin/bash
+# Khronos | urlize
 
 base64 -w4083 |
-  sed "
+sed "
   s/^/t.ls\//;
   1s/^/echo '/;
   $ a '|sed 's/^t.ls.//'|base64 -di"
