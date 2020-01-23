@@ -9,7 +9,6 @@ else:
   data = sys.stdin.buffer.read()
 
 dist = sys.stdout.buffer
-#dist = open("b.dat","wb+")
 def write_chunk(file,name,data):
   file.write(len(data).to_bytes(4,"big"))
   file.write(name)
@@ -39,4 +38,3 @@ write_chunk(dist,b"IDAT",zlib.compress(idat))
 
 write_chunk(dist,b"IEND",b"")
 
-dist.close()
