@@ -21,10 +21,12 @@ changecode(){
   funny=""
   A="$1"
   a="$2"
-  
-  for WORD in {A,a}+{0..25}; do
-    funny="${funny}$(printf "\U$(printf %X $[WORD])")"
-  done
+
+  funny="$(printf "$(printf '\\U%X' $[{A,a}+{0..25}])")"
+
+  blank="$(printf "\U1D455\U1D49D\U1D4A0\U1D4A1\U1D4A3\U1D4A4\U1D4A7\U1D4A8\U1D4AD\U1D4BA\U1D4BC\U1D4C4\U1D506\U1D50B\U1D50C\U1D515\U1D51D\U1D53A\U1D53F\U1D545\U1D547\U1D548\U1D549\U1D551")"
+  fixed="$(printf "\U210E\U212C\U2130\U2131\U210B\U2110\U2112\U2133\U211B\U212F\U210A\U2134\U212D\U210C\U2111\U211C\U2128\U2102\U210D\U2115\U2119\U211A\U211D\U2124")"
+  funny="$(sed "y/${blank}/${fixed}/" <<<"$funny")"
 
   sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/${funny}/"
 }
@@ -34,7 +36,7 @@ detect_a(){
     41|24B6|1F130|1F150|1F170|1F1E6) echo "61";;
     FF21) echo "FF41";;
     1F110) echo "249C";;
-    *) echo "$[0x$1+26]";;
+    *) printf %X "$[0x$1+26]";;
   esac
 }
 
