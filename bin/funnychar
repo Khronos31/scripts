@@ -1,15 +1,20 @@
 #!/bin/bash
 # Khronos | funnychar
 
-# 2020.02.16 funnychar ver 1.0
-# Original is written by kanata (@kanata201612)
+# 2020.02.16 funnychar ver 1.0.1
+# Original is written by kanata (@kanata2003)
 
 usage(){
   echo "ex) echo abcABC|$0 -u 1D468"
   echo "ex) echo abcABC|$0 -uA FF21 -ua 249C"
   echo "ex) $0 -p [pattern_number] abcABC"
   echo "    pattern_number is .."
-  sed '1,/^#LIST1_B$/d; /^#LIST1_E$/,$d; s/="/=U+/g; s/[":;]//g' "$0"
+  sed -e '1,/^#LIST1_B$/d
+          /^#LIST1_E$/,$d' \
+      -e 's/A=/A=U+/
+          s/;; #//
+          s/"//g' \
+      -- "$0"
 }
 
 changecode(){
@@ -18,12 +23,22 @@ changecode(){
   a="$2"
   
   for WORD in {A,a}+{0..25}; do
-    funny="${funny}$(printf "\U$(printf %x $[WORD])")"
+    funny="${funny}$(printf "\U$(printf %X $[WORD])")"
   done
 
   sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz/${funny}/"
 }
 
+detect_a(){
+  case "${1^^}" in
+    41|24B6|1F130|1F150|1F170|1F1E6) echo "61";;
+    FF21) echo "FF41";;
+    1F110) echo "249C";;
+    *) echo "$[0x$1+26]";;
+  esac
+}
+
+CP="41"
 A="41"
 a="61"
 
@@ -36,42 +51,52 @@ while [ $# -ge 1 ]; do
     -p)
       case "$2" in
 #LIST1_B
-         "1") A="FF21" ; a="FF41" ;; #ＡＢＣａｂｃ (FULLWIDTH)
-         "2") A="1D400"; a="1D41A";; #𝐀𝐁𝐂𝐚𝐛𝐜
-         "3") A="1D434"; a="1D44E";; #𝐴𝐵𝐶𝑎𝑏𝑐
-         "4") A="1D468"; a="1D482";; #𝑨𝑩𝑪𝒂𝒃𝒄
-         "5") A="1D49C"; a="1D4B6";; #𝒜𝒝𝒞𝒶𝒷𝒸
-         "6") A="1D4D0"; a="1D4EA";; #𝓐𝓑𝓒𝓪𝓫𝓬
-         "7") A="1D504"; a="1D51E";; #𝔄𝔅𝔆𝔞𝔟𝔠
-         "8") A="1D538"; a="1D552";; #𝔸𝔹𝔺𝕒𝕓𝕔
-         "9") A="1D56C"; a="1D586";; #𝕬𝕭𝕮𝖆𝖇𝖈
-        "10") A="1D5A0"; a="1D5BA";; #𝖠𝖡𝖢𝖺𝖻𝖼
-        "11") A="1D5D4"; a="1D5EE";; #𝗔𝗕𝗖𝗮𝗯𝗰
-        "12") A="1D608"; a="1D622";; #𝘈𝘉𝘊𝘢𝘣𝘤
-        "13") A="1D63C"; a="1D656";; #𝘼𝘽𝘾𝙖𝙗𝙘
-        "14") A="1D670"; a="1D68A";; #𝙰𝙱𝙲𝚊𝚋𝚌
-        "15") A="1F110"; a="249C" ;; #🄐🄑🄒⒜⒝⒞ (PARENTHESIZED)
-        "16") A="24B6" ;: "a=(None)" ;; #ⒶⒷⒸⓐⓑⓒ (CIRCLED)
-        "17") A="1F130";: "a=(None)" ;; #🄰🄱🄲 (SQUARED)
-        "18") A="1F150";: "a=(None)" ;; #🅐🅑🅒 (NEGATIVE CIRCLED)
-        "19") A="1F170";: "a=(None)" ;; #🅰🅱🅲 (NEGATIVE SQUARED)
-        "20") A="1F1E6";: "a=(None)" ;; #🇦🇧🇨
+         1) A="FF21" ;; # a=U+FF41  #ＡＢＣａｂｃ (FULLWIDTH)
+         2) A="1D400";; # a=U+1D41A #𝐀𝐁𝐂𝐚𝐛𝐜
+         3) A="1D434";; # a=U+1D44E #𝐴𝐵𝐶𝑎𝑏𝑐
+         4) A="1D468";; # a=U+1D482 #𝑨𝑩𝑪𝒂𝒃𝒄
+         5) A="1D49C";; # a=U+1D4B6 #𝒜𝒝𝒞𝒶𝒷𝒸
+         6) A="1D4D0";; # a=U+1D4EA #𝓐𝓑𝓒𝓪𝓫𝓬
+         7) A="1D504";; # a=U+1D51E #𝔄𝔅𝔆𝔞𝔟𝔠
+         8) A="1D538";; # a=U+1D552 #𝔸𝔹𝔺𝕒𝕓𝕔
+         9) A="1D56C";; # a=U+1D586 #𝕬𝕭𝕮𝖆𝖇𝖈
+        10) A="1D5A0";; # a=U+1D5BA #𝖠𝖡𝖢𝖺𝖻𝖼
+        11) A="1D5D4";; # a=U+1D5EE #𝗔𝗕𝗖𝗮𝗯𝗰
+        12) A="1D608";; # a=U+1D622 #𝘈𝘉𝘊𝘢𝘣𝘤
+        13) A="1D63C";; # a=U+1D656 #𝘼𝘽𝘾𝙖𝙗𝙘
+        14) A="1D670";; # a=U+1D68A #𝙰𝙱𝙲𝚊𝚋𝚌
+        15) A="1F110";; # a=U+249C  #🄐🄑🄒⒜⒝⒞ (PARENTHESIZED)
+        16) A="24B6" ;; # a=(None)  #ⒶⒷⒸⓐⓑⓒ (CIRCLED)
+        17) A="1F130";; # a=(None)  #🄰🄱🄲 (SQUARED)
+        18) A="1F150";; # a=(None)  #🅐🅑🅒 (NEGATIVE CIRCLED)
+        19) A="1F170";; # a=(None)  #🅰🅱🅲 (NEGATIVE SQUARED)
+        20) A="1F1E6";; # a=(None)  #🇦🇧🇨
 #LIST1_E
         *)
-          echo Invalid pattern 1>&2
+          echo "Invalid pattern" 1>&2
           usage 1>&2
           exit 1
         ;;
       esac
+      a="$(detect_a "$A")"
       shift 2
     ;;
-    -u|-uA)
-      A="${2#U+}"
+    -u)
+      A="${2//[^0-9a-fA-F]}"
+      a="$(detect_a "$(sed 's/^0*//' <<<"$A")")"
+      shift 2
+    ;;
+    -uA)
+      A="${2//[^0-9a-fA-F]}"
       shift 2
     ;;
     -ua)
-      a="${2#U+}"
+      a="${2//[^0-9a-fA-F]}"
       shift 2
+    ;;
+    --)
+      shift
+      break
     ;;
     *)
       break
