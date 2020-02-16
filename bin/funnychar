@@ -4,7 +4,7 @@
 # 2020.02.16 funnychar ver 1.0
 # Original is written by kanata (@kanata201612)
 
-usage()
+usage(){
   echo "ex) echo abcABC|$0 -u 1D468"
   echo "ex) echo abcABC|$0 -uA FF21 -ua 249C"
   echo "ex) $0 -p [pattern_number] abcABC"
