@@ -68,7 +68,7 @@ while [ $# -ge 1 ]; do
         13) A="1D63C";; # a=U+1D656 #𝘼𝘽𝘾𝙖𝙗𝙘
         14) A="1D670";; # a=U+1D68A #𝙰𝙱𝙲𝚊𝚋𝚌
         15) A="1F110";; # a=U+249C  #🄐🄑🄒⒜⒝⒞ (PARENTHESIZED)
-        16) A="24B6" ;; # a=(None)  #ⒶⒷⒸⓐⓑⓒ (CIRCLED)
+        16) A="24B6" ;; # a=U+24D0  #ⒶⒷⒸⓐⓑⓒ (CIRCLED)
         17) A="1F130";; # a=(None)  #🄰🄱🄲 (SQUARED)
         18) A="1F150";; # a=(None)  #🅐🅑🅒 (NEGATIVE CIRCLED)
         19) A="1F170";; # a=(None)  #🅰🅱🅲 (NEGATIVE SQUARED)
