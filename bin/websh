@@ -8,13 +8,15 @@ code=""
 images=""
 
 usage(){
-  echo "Usage: $0 -[rfh] [-p COMMAND] [-i IMAGE] [FILE]"
-  echo "With no FILE, or when FILE is -, read standard input."
-  echo "  -r : print raw response"
-  echo "  -f : print response in readable format"
-  echo "  -p COMMAND: read standard input and pass it to the standard input of COMMAND on the websh"
-  echo "  -i IMAGE: upload IMAGE to websh"
-  echo "  -h : display this help and exit"
+cat <<_USAGE
+Usage: $0 -[rfh] [-p COMMAND] [-i IMAGE] [FILE]
+With no FILE, or when FILE is -, read standard input.
+  -r : print raw response
+  -f : print response in readable format
+  -p COMMAND: read standard input and pass it to the standard input of COMMAND on the websh
+  -i IMAGE: upload IMAGE to websh
+  -h : display this help and exit
+_USAGE
 }
 
 while getopts rfp:i:h OPT; do
@@ -24,7 +26,7 @@ while getopts rfp:i:h OPT; do
     "f") MODE="format"
          ;;
     "p") MODE="pipe"
-         code="\"echo $(base64 -w0)|base64 -d|$OPTARG\""
+         code="\"base64 -d <<<$(base64 -w0)|$OPTARG\""
          ;;
     "i") images="$images,\"$(base64 -w0 "$OPTARG")\""
          ;;
@@ -48,21 +50,18 @@ if [ "$MODE" != "pipe" ]; then
   code="$(cat "$FILE"|jq -Rs .)"
 fi
 
-data=$(
+data="$(
 curl \
   -sS \
   -X POST \
-  -H 'Content-Type: text/plain;charset=UTF-8' \
-  -H 'Accept-Encoding: gzip, deflate' \
-  -H 'Accept: */*' \
-  -d '{"code":'"$code"',"images":['$images']}' \
+  -d "{\"code\":$code,\"images\":[$images]}" \
   "$URL"
-)
+)"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
 
 if [ "$MODE" = "raw" ]; then
-  echo "$data"
+  printf "%s\n" "$data"
   exit $(jq -r .status <<<"$data")
 fi
 
@@ -71,7 +70,7 @@ sysmsg="$(jq -r .system_message <<<"$data")"
 case "$MODE" in
   "default" | "pipe")
     jq -r .stdout <<<"$data"|head -c -1
-    test -n "$sysmsg"&&echo "$sysmsg" >&2
+    test -n "$sysmsg"&&printf "%s\n" "$sysmsg" >&2
     ;;
   "format")
     echo "[stdout]"
