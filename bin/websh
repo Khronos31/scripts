@@ -28,7 +28,7 @@ while getopts rfp:i:h OPT; do
     "p") MODE="pipe"
          code="\"base64 -d <<<$(base64 -w0)|$OPTARG\""
          ;;
-    "i") images="$images,\"$(base64 -w0 "$OPTARG")\""
+    "i") images="$images,\"$(base64 -w0 < "$OPTARG")\""
          ;;
     "h") usage
          exit 0
@@ -47,7 +47,11 @@ fi
 images="${images:1}"
 
 if [ "$MODE" != "pipe" ]; then
-  code="$(cat "$FILE"|jq -Rs .)"
+  if [ "$FILE" = "-" ]; then
+    code="$(jq -Rs .)"
+  else
+    code="$(jq -Rs . < "$FILE")"
+  fi
 fi
 
 data="$(
